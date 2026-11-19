@@ -1,0 +1,20 @@
+# secrets
+.env
+# data: versioned by DVC, never by Git
+/data/raw
+/data/processed
+/data/injected
+# local outputs
+/reports/drift
+/logs/*
+!/logs/.gitkeep
+mlruns/
+mlartifacts/
+mlflow.db
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/

@@ -1,0 +1,12 @@
+.env
+.git
+data
+reports
+logs
+mlruns
+mlartifacts
+venv
+.venv
+**/__pycache__
+tests
+docs

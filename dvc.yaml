@@ -1,0 +1,37 @@
+stages:
+  download:
+    cmd: python -m taxi.data.download
+    deps:
+      - src/taxi/data/download.py
+    params:
+      - data.months
+      - data.base_url
+      - data.zone_lookup_url
+    outs:
+      - data/raw:
+          persist: true   # the script skips files already downloaded (resumable)
+
+  aggregate:
+    cmd: python -m taxi.data.aggregate
+    deps:
+      - src/taxi/data/aggregate.py
+      - data/raw
+    params:
+      - data.months
+      - data.top_k_zones
+      - data.excluded_zones
+      - split.train_start
+      - split.train_end
+    outs:
+      - data/processed/zone_hour.parquet
+      - data/processed/zones.json
+
+  features:
+    cmd: python -m taxi.data.features
+    deps:
+      - src/taxi/data/features.py
+      - data/processed/zone_hour.parquet
+    params:
+      - features
+    outs:
+      - data/processed/features.parquet

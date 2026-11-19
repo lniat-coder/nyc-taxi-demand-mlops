@@ -1,0 +1,40 @@
+# Data and model parameters. DVC tracks the keys used by each stage (see dvc.yaml),
+# so changing a value here re-runs only the stages that depend on it.
+
+data:
+  # Source: NYC Taxi & Limousine Commission (TLC), yellow taxi trip records.
+  # https://www.nyc.gov/site/tlc/about/tlc-trip-record-data.page
+  base_url: https://d37ci6vzurychx.cloudfront.net/trip-data
+  zone_lookup_url: https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv
+  # 2019-11 is only a warm-up month for the 168 h lag of the first training week.
+  months: [2019-11, 2019-12, 2020-01, 2020-02, 2020-03, 2020-04, 2020-05, 2020-06]
+  # Zones served by the model: the busiest zones of the training period.
+  top_k_zones: 60
+  excluded_zones: [264, 265]  # "Unknown" / "Outside of NYC" in the zone lookup
+
+split:
+  # Reference period: what the first model is trained and validated on (split by time).
+  train_start: "2019-12-01"
+  train_end: "2020-01-31"
+  valid_start: "2020-02-01"
+  valid_end: "2020-02-29"
+  # Drift period: COVID-19 lockdown, demand collapses from mid-March 2020.
+  drift_start: "2020-03-01"
+  drift_end: "2020-06-30"
+
+features:
+  lags: [1, 2, 3, 24, 168]
+  rolling_window: 24
+  categorical: [zone_id]
+  numeric: [hour, day_of_week, is_weekend, is_holiday, lag_1, lag_2, lag_3, lag_24, lag_168, roll_mean_24]
+  target: pickups
+
+model:
+  name: nyc-taxi-demand
+  # Histogram gradient boosting with a Poisson loss: the target is a count.
+  loss: poisson
+  learning_rate: 0.05
+  max_iter: 300
+  max_leaf_nodes: 31
+  min_samples_leaf: 40
+  random_state: 42

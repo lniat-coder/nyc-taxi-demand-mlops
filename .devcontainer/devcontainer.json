@@ -1,14 +1,5 @@
 {
   "name": "nyc-taxi-demand-mlops",
-  "image": "mcr.microsoft.com/devcontainers/python:3.12",
-  "features": {
-    "ghcr.io/devcontainers/features/docker-in-docker:2": {}
-  },
-  "forwardPorts": [5000, 8000, 9090],
-  "portsAttributes": {
-    "5000": {"label": "MLflow"},
-    "8000": {"label": "API"},
-    "9090": {"label": "Prometheus"}
-  }
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "forwardPorts": [5000, 8000, 9090]
 }
-

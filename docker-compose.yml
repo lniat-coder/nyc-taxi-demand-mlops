@@ -1,0 +1,42 @@
+# MLflow (tracking + registry), the API, and Prometheus (metrics + alert rules).
+# Secrets come from .env (never committed): docker compose reads it automatically.
+services:
+  mlflow:
+    build: {context: ., dockerfile: docker/mlflow.Dockerfile}
+    image: nyc-taxi-mlflow:3.18.0
+    command: >
+      mlflow server --host 0.0.0.0 --port 5000
+      --backend-store-uri sqlite:////mlflow/mlflow.db
+      --artifacts-destination /mlflow/artifacts
+      --allowed-hosts "localhost,localhost:5000,127.0.0.1,127.0.0.1:5000,mlflow,mlflow:5000"
+    ports: ["5000:5000"]
+    volumes: [mlflow-data:/mlflow]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5000/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build: {context: ., dockerfile: docker/api.Dockerfile}
+    image: nyc-taxi-api:${API_IMAGE_TAG:-1.0.0}
+    environment:
+      MLFLOW_TRACKING_URI: http://mlflow:5000
+      MODEL_NAME: ${MODEL_NAME:-nyc-taxi-demand}
+      ADMIN_TOKEN: ${ADMIN_TOKEN:?set ADMIN_TOKEN in .env}
+      PREDICTION_LOG: /app/logs/predictions.jsonl
+    ports: ["8000:8000"]
+    volumes: [./logs:/app/logs]
+    depends_on:
+      mlflow: {condition: service_healthy}
+
+  prometheus:
+    image: prom/prometheus:v3.0.0
+    ports: ["9090:9090"]
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
+    depends_on: [api]
+
+volumes:
+  mlflow-data:

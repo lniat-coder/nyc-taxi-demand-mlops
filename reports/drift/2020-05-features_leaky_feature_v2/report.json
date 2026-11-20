@@ -1,0 +1,64 @@
+{
+  "label": "2020-05-features_leaky_feature",
+  "window": [
+    "2020-05-01",
+    "2020-05-31"
+  ],
+  "n_rows": 44640,
+  "n_days": 31,
+  "model_version": "2",
+  "reference_window": [
+    "2020-03-20",
+    "2020-04-23"
+  ],
+  "decision": "WATCH",
+  "reason": "moderate drift, keep watching",
+  "quality_issues": [],
+  "psi": {
+    "lag_1": {
+      "value": 0.0123,
+      "level": "stable"
+    },
+    "lag_24": {
+      "value": 0.0076,
+      "level": "stable"
+    },
+    "lag_168": {
+      "value": 0.1454,
+      "level": "watch"
+    },
+    "roll_mean_24": {
+      "value": 0.059,
+      "level": "stable"
+    }
+  },
+  "performance": {
+    "mae": 1.9352,
+    "rmse": 3.3575,
+    "wape": 0.2896,
+    "reference_wape": 0.3211,
+    "wape_ratio": 0.902
+  },
+  "previous": {
+    "mae": 2.8355,
+    "rmse": 3.9218,
+    "wape": 0.4243,
+    "previous_version": "1",
+    "wape_ratio_vs_previous": 0.6825023185032817,
+    "worst_zone": 42,
+    "worst_zone_wape_ratio": 1.2019484515367127,
+    "production_validation_gap": 0.9019661974468196,
+    "previous_validation_gap": 3.71831455850633
+  },
+  "worst_zones": {
+    "45": 1.095,
+    "158": 1.033,
+    "4": 0.926,
+    "209": 0.866,
+    "211": 0.846
+  },
+  "volume": {
+    "actual_pickups": 298288,
+    "predicted_pickups": 255423
+  }
+}

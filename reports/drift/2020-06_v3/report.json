@@ -1,0 +1,64 @@
+{
+  "label": "2020-06",
+  "window": [
+    "2020-06-01",
+    "2020-06-30"
+  ],
+  "n_rows": 43200,
+  "n_days": 30,
+  "model_version": "3",
+  "reference_window": [
+    "2020-04-20",
+    "2020-05-24"
+  ],
+  "decision": "ROLLBACK",
+  "reason": "the production model does worse than the previous one on fresh labels",
+  "quality_issues": [],
+  "psi": {
+    "lag_1": {
+      "value": 0.1685,
+      "level": "watch"
+    },
+    "lag_24": {
+      "value": 0.1591,
+      "level": "watch"
+    },
+    "lag_168": {
+      "value": 0.1326,
+      "level": "watch"
+    },
+    "roll_mean_24": {
+      "value": 0.626,
+      "level": "act"
+    }
+  },
+  "performance": {
+    "mae": 4.0775,
+    "rmse": 6.6694,
+    "wape": 0.3548,
+    "reference_wape": 0.001,
+    "wape_ratio": 354.679
+  },
+  "previous": {
+    "mae": 4.0289,
+    "rmse": 7.3939,
+    "wape": 0.3506,
+    "previous_version": "2",
+    "wape_ratio_vs_previous": 1.0120699499041355,
+    "worst_zone": 137,
+    "worst_zone_wape_ratio": 1.3786708386869684,
+    "production_validation_gap": 354.6793359546481,
+    "previous_validation_gap": 1.0918244062146687
+  },
+  "worst_zones": {
+    "145": 1.085,
+    "45": 1.049,
+    "4": 1.045,
+    "232": 1.012,
+    "158": 0.922
+  },
+  "volume": {
+    "actual_pickups": 496463,
+    "predicted_pickups": 496642
+  }
+}

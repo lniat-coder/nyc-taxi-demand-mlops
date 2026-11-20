@@ -1,0 +1,54 @@
+{
+  "label": "2020-06",
+  "window": [
+    "2020-06-01",
+    "2020-06-30"
+  ],
+  "n_rows": 43200,
+  "n_days": 30,
+  "model_version": "2",
+  "reference_window": [
+    "2020-03-20",
+    "2020-04-23"
+  ],
+  "decision": "WATCH",
+  "reason": "strong drift but the error has not degraded enough to retrain",
+  "quality_issues": [],
+  "psi": {
+    "lag_1": {
+      "value": 0.1973,
+      "level": "watch"
+    },
+    "lag_24": {
+      "value": 0.1584,
+      "level": "watch"
+    },
+    "lag_168": {
+      "value": 0.0279,
+      "level": "stable"
+    },
+    "roll_mean_24": {
+      "value": 0.6925,
+      "level": "act"
+    }
+  },
+  "performance": {
+    "mae": 4.0289,
+    "rmse": 7.3939,
+    "wape": 0.3506,
+    "reference_wape": 0.3211,
+    "wape_ratio": 1.092
+  },
+  "previous": null,
+  "worst_zones": {
+    "45": 0.901,
+    "145": 0.83,
+    "4": 0.811,
+    "158": 0.756,
+    "232": 0.755
+  },
+  "volume": {
+    "actual_pickups": 496463,
+    "predicted_pickups": 356471
+  }
+}

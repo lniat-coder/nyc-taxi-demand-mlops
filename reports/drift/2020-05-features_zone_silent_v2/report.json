@@ -1,0 +1,72 @@
+{
+  "label": "2020-05-features_zone_silent",
+  "window": [
+    "2020-05-01",
+    "2020-05-31"
+  ],
+  "n_rows": 44640,
+  "n_days": 31,
+  "model_version": "2",
+  "reference_window": [
+    "2020-03-20",
+    "2020-04-23"
+  ],
+  "decision": "FIX_PIPELINE",
+  "reason": "data quality issue: a broken pipeline looks like drift, do not retrain on it",
+  "quality_issues": [
+    {
+      "check": "silent_zone",
+      "zone_id": 237,
+      "zero_hours": 744,
+      "reference_mean_per_hour": 11.9,
+      "expected_mean_per_hour_now": 13.1
+    }
+  ],
+  "psi": {
+    "lag_1": {
+      "value": 0.0062,
+      "level": "stable"
+    },
+    "lag_24": {
+      "value": 0.0035,
+      "level": "stable"
+    },
+    "lag_168": {
+      "value": 0.1555,
+      "level": "watch"
+    },
+    "roll_mean_24": {
+      "value": 0.0374,
+      "level": "stable"
+    }
+  },
+  "performance": {
+    "mae": 2.1241,
+    "rmse": 3.7648,
+    "wape": 0.3292,
+    "reference_wape": 0.3211,
+    "wape_ratio": 1.025
+  },
+  "previous": {
+    "mae": 3.1595,
+    "rmse": 4.3649,
+    "wape": 0.4896,
+    "previous_version": "1",
+    "wape_ratio_vs_previous": 0.6722844109309859,
+    "worst_zone": 42,
+    "worst_zone_wape_ratio": 0.9955930395922372,
+    "production_validation_gap": 1.0251635656174836,
+    "previous_validation_gap": 4.290423059483506
+  },
+  "worst_zones": {
+    "237": 979.402,
+    "45": 1.129,
+    "158": 1.071,
+    "4": 0.965,
+    "209": 0.924
+  },
+  "volume": {
+    "actual_pickups": 288052,
+    "predicted_pickups": 246319
+  }
+}

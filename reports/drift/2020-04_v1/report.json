@@ -1,0 +1,54 @@
+{
+  "label": "2020-04",
+  "window": [
+    "2020-04-01",
+    "2020-04-30"
+  ],
+  "n_rows": 43200,
+  "n_days": 30,
+  "model_version": "1",
+  "reference_window": [
+    "2019-12-01",
+    "2020-01-31"
+  ],
+  "decision": "RETRAIN",
+  "reason": "inputs drifted and the error degraded",
+  "quality_issues": [],
+  "psi": {
+    "lag_1": {
+      "value": 5.7127,
+      "level": "act"
+    },
+    "lag_24": {
+      "value": 5.7428,
+      "level": "act"
+    },
+    "lag_168": {
+      "value": 5.7654,
+      "level": "act"
+    },
+    "roll_mean_24": {
+      "value": 7.532,
+      "level": "act"
+    }
+  },
+  "performance": {
+    "mae": 3.1165,
+    "rmse": 4.0405,
+    "wape": 0.6291,
+    "reference_wape": 0.1141,
+    "wape_ratio": 5.513
+  },
+  "previous": null,
+  "worst_zones": {
+    "45": 10.252,
+    "158": 6.775,
+    "4": 5.689,
+    "209": 5.439,
+    "232": 4.881
+  },
+  "volume": {
+    "actual_pickups": 214003,
+    "predicted_pickups": 324832
+  }
+}

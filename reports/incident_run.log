@@ -1,0 +1,202 @@
+
+================ 0. Reference model: trained Dec 2019-Jan 2020, validated Feb 2020 ================
+.venv/bin/python -m taxi.model.train
+2026/11/20 11:35:36 INFO mlflow.tracking.fluent: Experiment with name 'nyc-taxi-demand-training' does not exist. Creating a new experiment.
+Successfully registered model 'nyc-taxi-demand'.
+2026/11/20 11:35:44 INFO mlflow.store.model_registry.abstract_store: Waiting up to 300 seconds for model version to finish creation. Model name: nyc-taxi-demand, version 1
+Created version '1' of model 'nyc-taxi-demand'.
+2026-11-20 11:35:45,353 INFO candidate: WAPE 0.1141 | naive 0.1626 | production - | gate passed | version 1
+🏃 View run train_2019-12-01_2020-01-31 at: http://localhost:5000/#/experiments/1/runs/b2d440fdd67444c28c586b4e19bec7c7
+🧪 View experiment at: http://localhost:5000/#/experiments/1
+Registered nyc-taxi-demand version 1 with alias @staging.
+Promote it with: make promote
+.venv/bin/python -m taxi.model.registry promote  --reason "reference model"
+@production: none -> 1
+API at http://localhost:8000 now serves version 1: OK
+
+================ 1. Normal traffic (February 2020): PSI stays under 0.10 ================
+.venv/bin/python scripts/replay_traffic.py --start 2020-02-01 --end 2020-02-29 --n 1500 --rps 50
+250/1500 sent, status {200: 250}, model versions {'1': 250}
+500/1500 sent, status {200: 500}, model versions {'1': 500}
+750/1500 sent, status {200: 750}, model versions {'1': 750}
+1000/1500 sent, status {200: 1000}, model versions {'1': 1000}
+1250/1500 sent, status {200: 1250}, model versions {'1': 1250}
+1500/1500 sent, status {200: 1500}, model versions {'1': 1500}
+done: {200: 1500} in 41s, served by versions {'1': 1500}
+taxi_input_psi{feature="lag_1"} 0.010789657869060679
+taxi_input_psi{feature="lag_24"} 0.007256816251168651
+taxi_input_psi{feature="lag_168"} 0.00644207063521595
+taxi_input_psi{feature="roll_mean_24"} 0.012142135666898033
+.venv/bin/python -m taxi.monitoring.drift --month 2020-02 
+2026/11/20 11:36:41 INFO mlflow.tracking.fluent: Experiment with name 'nyc-taxi-demand-monitoring' does not exist. Creating a new experiment.
+🏃 View run drift_2020-02 at: http://localhost:5000/#/experiments/2/runs/6497295f0031455d85653a467efaded7
+🧪 View experiment at: http://localhost:5000/#/experiments/2
+
+=== Drift check 2020-02 (2020-02-01 .. 2020-02-29), model v1 trained on 2019-12-01 .. 2020-01-31
+  PSI lag_1            0.001  stable
+  PSI lag_24           0.001  stable
+  PSI lag_168          0.001  stable
+  PSI roll_mean_24     0.004  stable
+  WAPE 0.114 (validation 0.114, ratio 1.00)
+  pickups: actual 6,107,196, predicted 6,140,537
+  DECISION: OK (inputs look like the training data)
+  report: /workspaces/nyc-taxi-demand-mlops/reports/drift/2020-02_v1/report.json
+
+
+================ 2. Lockdown (April 2020): live PSI above 0.25, FeatureDriftAct fires in Prometheus ================
+.venv/bin/python scripts/replay_traffic.py --start 2020-04-01 --end 2020-04-30 --n 1500 --rps 50
+250/1500 sent, status {200: 250}, model versions {'1': 250}
+500/1500 sent, status {200: 500}, model versions {'1': 500}
+750/1500 sent, status {200: 750}, model versions {'1': 750}
+1000/1500 sent, status {200: 1000}, model versions {'1': 1000}
+1250/1500 sent, status {200: 1250}, model versions {'1': 1250}
+1500/1500 sent, status {200: 1500}, model versions {'1': 1500}
+done: {200: 1500} in 43s, served by versions {'1': 1500}
+taxi_input_psi{feature="lag_1"} 5.59063554435925
+taxi_input_psi{feature="lag_24"} 5.586878603036723
+taxi_input_psi{feature="lag_168"} 5.53723124227155
+taxi_input_psi{feature="roll_mean_24"} 7.492959358292317
+-> http://localhost:9090/alerts
+
+================ 3. Retraining trigger on April: RETRAIN, gate, @staging, then a human promotes ================
+.venv/bin/python -m taxi.pipelines.check_and_retrain --month 2020-04  
+Registered model 'nyc-taxi-demand' already exists. Creating a new version of this model...
+2026/11/20 11:37:46 INFO mlflow.store.model_registry.abstract_store: Waiting up to 300 seconds for model version to finish creation. Model name: nyc-taxi-demand, version 2
+Created version '2' of model 'nyc-taxi-demand'.
+2026-11-20 11:37:47,061 INFO candidate: WAPE 0.3211 | naive 0.4010 | production 0.5780 | gate passed | version 2
+🏃 View run drift_2020-04 at: http://localhost:5000/#/experiments/2/runs/369ae0583a2c463e8aba9eaecc38df9d
+🧪 View experiment at: http://localhost:5000/#/experiments/2
+
+=== Drift check 2020-04 (2020-04-01 .. 2020-04-30), model v1 trained on 2019-12-01 .. 2020-01-31
+  PSI lag_1            5.713  act
+  PSI lag_24           5.743  act
+  PSI lag_168          5.765  act
+  PSI roll_mean_24     7.532  act
+  WAPE 0.629 (validation 0.114, ratio 5.51)
+  pickups: actual 214,003, predicted 324,832
+  DECISION: RETRAIN (inputs drifted and the error degraded)
+  report: /workspaces/nyc-taxi-demand-mlops/reports/drift/2020-04_v1/report.json
+
+🏃 View run retrain_2020-04 at: http://localhost:5000/#/experiments/1/runs/20092604bfcf4b5ba95e05d4bc6fb9e9
+🧪 View experiment at: http://localhost:5000/#/experiments/1
+Candidate version 2 registered as @staging (WAPE 0.321 vs production 0.578 on 2020-04-24..2020-04-30).
+Next: make promote REASON="..."
+.venv/bin/python -m taxi.model.registry promote  --reason "lockdown drift, retrained on the last 35 days of April"
+@production: 1 -> 2
+API at http://localhost:8000 now serves version 2: OK
+.venv/bin/python scripts/replay_traffic.py --start 2020-04-01 --end 2020-04-30 --n 1500 --rps 50
+250/1500 sent, status {200: 250}, model versions {'2': 250}
+500/1500 sent, status {200: 500}, model versions {'2': 500}
+750/1500 sent, status {200: 750}, model versions {'2': 750}
+1000/1500 sent, status {200: 1000}, model versions {'2': 1000}
+1250/1500 sent, status {200: 1250}, model versions {'2': 1250}
+1500/1500 sent, status {200: 1500}, model versions {'2': 1500}
+done: {200: 1500} in 48s, served by versions {'2': 1500}
+taxi_input_psi{feature="lag_1"} 0.012874011596903302
+taxi_input_psi{feature="lag_24"} 0.012479004954350677
+taxi_input_psi{feature="lag_168"} 0.32444969753574276
+taxi_input_psi{feature="roll_mean_24"} 0.02956197980437108
+
+================ 4. Injected bug A: zone 237 goes silent in May. Quality check: FIX_PIPELINE, no retrain ================
+.venv/bin/python scripts/inject_drift.py --zone 237 --start 2020-05-01 --end 2020-05-31
+zone 237: 744 hours silenced (10,236 pickups removed)
+wrote /workspaces/nyc-taxi-demand-mlops/data/injected/features_zone_silent.parquet
+.venv/bin/python -m taxi.pipelines.check_and_retrain --month 2020-05 --features data/injected/features_zone_silent.parquet --label 2020-05-features_zone_silent --force
+🏃 View run drift_2020-05-features_zone_silent at: http://localhost:5000/#/experiments/2/runs/f32ac28288a942b1ba3e37fc5ecc3287
+🧪 View experiment at: http://localhost:5000/#/experiments/2
+
+=== Drift check 2020-05-features_zone_silent (2020-05-01 .. 2020-05-31), model v2 trained on 2020-03-20 .. 2020-04-23
+  PSI lag_1            0.006  stable
+  PSI lag_24           0.004  stable
+  PSI lag_168          0.155  watch
+  PSI roll_mean_24     0.037  stable
+  WAPE 0.329 (validation 0.321, ratio 1.02)
+  pickups: actual 288,052, predicted 246,319
+  vs previous v1: WAPE 0.490, ratio 0.67, worst zone 42 x1.00
+  live/validation WAPE: production x1.03, previous x4.29
+  QUALITY ISSUE: {'check': 'silent_zone', 'zone_id': 237, 'zero_hours': 744, 'reference_mean_per_hour': 11.9, 'expected_mean_per_hour_now': np.float64(13.1)}
+  DECISION: FIX_PIPELINE (data quality issue: a broken pipeline looks like drift, do not retrain on it)
+  report: /workspaces/nyc-taxi-demand-mlops/reports/drift/2020-05-features_zone_silent_v2/report.json
+
+Not retraining on suspicious data (even with --force). Fix the upstream pipeline, then re-run.
+
+================ 5. Injected bug B: lag_1 off-by-one (leaks the target) from 2020-04-15. Scheduled retrain passes the gate ================
+lag_1 now equals the target on 67,680 rows (2020-04-15 .. 2020-05-31)
+wrote /workspaces/nyc-taxi-demand-mlops/data/injected/features_leaky_feature.parquet
+.venv/bin/python -m taxi.pipelines.check_and_retrain --month 2020-05 --features data/injected/features_leaky_feature.parquet --label 2020-05-features_leaky_feature --force --auto-promote
+Registered model 'nyc-taxi-demand' already exists. Creating a new version of this model...
+2026/11/20 11:39:20 INFO mlflow.store.model_registry.abstract_store: Waiting up to 300 seconds for model version to finish creation. Model name: nyc-taxi-demand, version 3
+Created version '3' of model 'nyc-taxi-demand'.
+2026-11-20 11:39:21,394 INFO candidate: WAPE 0.0010 | naive 0.4016 | production 0.3107 | gate passed | version 3
+🏃 View run drift_2020-05-features_leaky_feature at: http://localhost:5000/#/experiments/2/runs/c371734912ad46ccbe0fbea721a1825a
+🧪 View experiment at: http://localhost:5000/#/experiments/2
+
+=== Drift check 2020-05-features_leaky_feature (2020-05-01 .. 2020-05-31), model v2 trained on 2020-03-20 .. 2020-04-23
+  PSI lag_1            0.012  stable
+  PSI lag_24           0.008  stable
+  PSI lag_168          0.145  watch
+  PSI roll_mean_24     0.059  stable
+  WAPE 0.290 (validation 0.321, ratio 0.90)
+  pickups: actual 298,288, predicted 255,423
+  vs previous v1: WAPE 0.424, ratio 0.68, worst zone 42 x1.20
+  live/validation WAPE: production x0.90, previous x3.72
+  DECISION: WATCH (moderate drift, keep watching)
+  report: /workspaces/nyc-taxi-demand-mlops/reports/drift/2020-05-features_leaky_feature_v2/report.json
+
+Scheduled retrain (decision was WATCH).
+🏃 View run retrain_2020-05-features_leaky_feature at: http://localhost:5000/#/experiments/1/runs/115ed27239ea4eb2b0402099160fb444
+🧪 View experiment at: http://localhost:5000/#/experiments/1
+Candidate version 3 registered as @staging (WAPE 0.001 vs production 0.311 on 2020-05-25..2020-05-31).
+@production: 2 -> 3
+API at http://localhost:8000 now serves version 3: OK
+.venv/bin/python -m taxi.model.registry status
+version  aliases                  valid_wape  train_window             git       data_md5   notes
+      1                               0.1141  2019-12-01..2020-01-31   84063c3f  662a44de   manual
+      2  @previous                    0.3211  2020-03-20..2020-04-23   84063c3f  662a44de   drift:2020-04
+      3  @production                  0.0010  2020-04-20..2020-05-24   84063c3f  96a6fae8   scheduled
+
+================ 6. Fresh labels (June 2020, clean data): production worse than previous -> ROLLBACK ================
+.venv/bin/python -m taxi.monitoring.drift --month 2020-06 
+🏃 View run drift_2020-06 at: http://localhost:5000/#/experiments/2/runs/25338bbfcc584b20a2ac7693db3b74cc
+🧪 View experiment at: http://localhost:5000/#/experiments/2
+
+=== Drift check 2020-06 (2020-06-01 .. 2020-06-30), model v3 trained on 2020-04-20 .. 2020-05-24
+  PSI lag_1            0.169  watch
+  PSI lag_24           0.159  watch
+  PSI lag_168          0.133  watch
+  PSI roll_mean_24     0.626  act
+  WAPE 0.355 (validation 0.001, ratio 354.68)
+  pickups: actual 496,463, predicted 496,642
+  vs previous v2: WAPE 0.351, ratio 1.01, worst zone 137 x1.38
+  live/validation WAPE: production x354.68, previous x1.09
+  DECISION: ROLLBACK (the production model does worse than the previous one on fresh labels)
+  report: /workspaces/nyc-taxi-demand-mlops/reports/drift/2020-06_v3/report.json
+
+
+================ 7. Rollback: @production back to the previous version, API reloaded ================
+.venv/bin/python -m taxi.model.registry rollback  --reason "lag_1 off-by-one leak in the training data (drift check 2020-06)"
+ROLLBACK @production: 3 -> 2
+API at http://localhost:8000 now serves version 2: OK
+
+real	0m3.705s
+user	0m1.960s
+sys	0m0.332s
+.venv/bin/python -m taxi.model.registry status
+version  aliases                  valid_wape  train_window             git       data_md5   notes
+      1                               0.1141  2019-12-01..2020-01-31   84063c3f  662a44de   manual
+      2  @production                  0.3211  2020-03-20..2020-04-23   84063c3f  662a44de   drift:2020-04
+      3                               0.0010  2020-04-20..2020-05-24   84063c3f  96a6fae8   rolled back: lag_1 off-by-one leak in the training data (drift check 2020-06)
+.venv/bin/python -m taxi.monitoring.drift --month 2020-06 
+🏃 View run drift_2020-06 at: http://localhost:5000/#/experiments/2/runs/f3660555a84a4a31a5efb3e053661f81
+🧪 View experiment at: http://localhost:5000/#/experiments/2
+
+=== Drift check 2020-06 (2020-06-01 .. 2020-06-30), model v2 trained on 2020-03-20 .. 2020-04-23
+  PSI lag_1            0.197  watch
+  PSI lag_24           0.158  watch
+  PSI lag_168          0.028  stable
+  PSI roll_mean_24     0.693  act
+  WAPE 0.351 (validation 0.321, ratio 1.09)
+  pickups: actual 496,463, predicted 356,471
+  DECISION: WATCH (strong drift but the error has not degraded enough to retrain)
+  report: /workspaces/nyc-taxi-demand-mlops/reports/drift/2020-06_v2/report.json
+

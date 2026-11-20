@@ -1,0 +1,54 @@
+{
+  "label": "2020-02",
+  "window": [
+    "2020-02-01",
+    "2020-02-29"
+  ],
+  "n_rows": 41760,
+  "n_days": 29,
+  "model_version": "1",
+  "reference_window": [
+    "2019-12-01",
+    "2020-01-31"
+  ],
+  "decision": "OK",
+  "reason": "inputs look like the training data",
+  "quality_issues": [],
+  "psi": {
+    "lag_1": {
+      "value": 0.0007,
+      "level": "stable"
+    },
+    "lag_24": {
+      "value": 0.0008,
+      "level": "stable"
+    },
+    "lag_168": {
+      "value": 0.0011,
+      "level": "stable"
+    },
+    "roll_mean_24": {
+      "value": 0.0045,
+      "level": "stable"
+    }
+  },
+  "performance": {
+    "mae": 16.6897,
+    "rmse": 28.8564,
+    "wape": 0.1141,
+    "reference_wape": 0.1141,
+    "wape_ratio": 1.0
+  },
+  "previous": null,
+  "worst_zones": {
+    "145": 0.356,
+    "232": 0.302,
+    "7": 0.295,
+    "226": 0.278,
+    "4": 0.268
+  },
+  "volume": {
+    "actual_pickups": 6107196,
+    "predicted_pickups": 6140537
+  }
+}

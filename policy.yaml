@@ -1,0 +1,45 @@
+# Monitoring and retraining policy. It lives in Git, so changing a threshold
+# is a reviewed commit, not a manual tweak on a server.
+
+drift:
+  # PSI rule of thumb from the course: under 0.10 stable, 0.10-0.25 watch, above 0.25 act.
+  psi_watch: 0.10
+  psi_act: 0.25
+  # Features whose PSI is computed (live in the API and in the batch check).
+  features: [lag_1, lag_24, lag_168, roll_mean_24]
+  # Live PSI in the API: sliding window of the last N requests, recomputed every K requests.
+  live_window: 1000
+  live_every: 50
+
+performance:
+  # Primary metric: WAPE = sum|y - y_hat| / sum y (scale-free, so it stays
+  # comparable when the demand collapses).
+  metric: wape
+  # "Does it hurt?": production WAPE on the window / WAPE on its own validation set.
+  hurt_ratio: 1.20
+
+quality:
+  # "Is it a bug?": a zone that used to be busy and now reports zero pickups
+  # for this many consecutive hours is treated as an upstream pipeline problem.
+  silent_zone_hours: 24
+  silent_zone_min_ref_mean: 5    # expected pickups per hour now (reference mean x city volume ratio)
+  # An hour with zero pickups across all zones = a missing file chunk.
+  max_empty_hours: 0
+
+retrain:
+  min_days: 14            # "Enough new data?"
+  train_days: 35          # candidate trained on the last N days of the window...
+  holdout_days: 7         # ...and evaluated on the following N days
+  min_gain: 0.02          # gate: candidate WAPE <= production WAPE * (1 - min_gain)
+  auto_promote: false     # a human moves @production (see docs/ROLLBACK.md)
+
+rollback:
+  # Champion vs previous champion on fresh labels.
+  max_wape_ratio: 1.10       # production WAPE / previous WAPE
+  max_zone_wape_ratio: 2.0   # worst zone, among zones with enough volume
+  zone_min_pickups: 500      # zone volume in the window to be considered
+  # Validation gap = live WAPE / validation WAPE. If the production model is far off its
+  # validation while the previous model still matches its own, the new model is the problem
+  # (leakage, train/serve skew), not the data: roll back.
+  max_validation_gap: 3.0
+  previous_ok_gap: 1.5

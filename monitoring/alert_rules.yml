@@ -1,0 +1,38 @@
+# Alerts are visible at http://localhost:9090/alerts (pending, then firing).
+# In production, Alertmanager would route them to Slack or PagerDuty.
+groups:
+  - name: taxi-api
+    rules:
+      # Layer 1, infrastructure
+      - alert: ApiDown
+        expr: up{job="taxi-api"} == 0
+        for: 30s
+        labels: {severity: page}
+        annotations: {summary: "The taxi API cannot be scraped"}
+
+      - alert: LatencyP95AboveBudget
+        expr: histogram_quantile(0.95, sum by (le) (rate(taxi_request_seconds_bucket{endpoint="/predict"}[5m]))) > 0.2
+        for: 2m
+        labels: {severity: page}
+        annotations: {summary: "P95 latency of /predict above the 200 ms budget"}
+
+      - alert: NoModelLoaded
+        expr: taxi_model_loaded == 0
+        for: 1m
+        labels: {severity: page}
+        annotations: {summary: "The API is up but serves no model (/health answers 503)"}
+
+      # Layer 2, inputs: PSI per feature, thresholds from policy.yaml
+      - alert: FeatureDriftWatch
+        expr: taxi_input_psi > 0.10
+        for: 30s
+        labels: {severity: ticket}
+        annotations: {summary: "PSI of {{ $labels.feature }} is {{ $value | printf \"%.2f\" }}: watch"}
+
+      - alert: FeatureDriftAct
+        expr: taxi_input_psi > 0.25
+        for: 30s
+        labels: {severity: page}
+        annotations:
+          summary: "PSI of {{ $labels.feature }} is {{ $value | printf \"%.2f\" }}: run the drift check"
+          runbook: "make check MONTH=YYYY-MM, then follow the decision (docs/ROLLBACK.md)"

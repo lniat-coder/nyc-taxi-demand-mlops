@@ -1,0 +1,107 @@
+schema: '2.0'
+stages:
+  download:
+    cmd: python -m taxi.data.download
+    deps:
+    - path: src/taxi/data/download.py
+      hash: md5
+      md5: 723a155f2a9c33079e9b15a3670f467f
+      size: 2466
+    params:
+      params.yaml:
+        data.base_url: https://d37ci6vzurychx.cloudfront.net/trip-data
+        data.months:
+        - 2019-11
+        - 2019-12
+        - 2020-01
+        - 2020-02
+        - 2020-03
+        - 2020-04
+        - 2020-05
+        - 2020-06
+        data.zone_lookup_url: 
+          https://d37ci6vzurychx.cloudfront.net/misc/taxi_zone_lookup.csv
+    outs:
+    - path: data/raw
+      hash: md5
+      md5: 284cd8c3e4af9ff1996de5ac3a152b7e.dir
+      size: 452248262
+      nfiles: 9
+  aggregate:
+    cmd: python -m taxi.data.aggregate
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: 284cd8c3e4af9ff1996de5ac3a152b7e.dir
+      size: 452248262
+      nfiles: 9
+    - path: src/taxi/data/aggregate.py
+      hash: md5
+      md5: 5b7e4a50b52a386c673aa7af1f53cef3
+      size: 3800
+    params:
+      params.yaml:
+        data.excluded_zones:
+        - 264
+        - 265
+        data.months:
+        - 2019-11
+        - 2019-12
+        - 2020-01
+        - 2020-02
+        - 2020-03
+        - 2020-04
+        - 2020-05
+        - 2020-06
+        data.top_k_zones: 60
+        split.train_end: '2020-01-31'
+        split.train_start: '2019-12-01'
+    outs:
+    - path: data/processed/zone_hour.parquet
+      hash: md5
+      md5: 2420890aa4815a0ca7c4d343bd4681e3
+      size: 1045386
+    - path: data/processed/zones.json
+      hash: md5
+      md5: 53eee61e0ff53c7404aca009841a46b4
+      size: 4493
+  features:
+    cmd: python -m taxi.data.features
+    deps:
+    - path: data/processed/zone_hour.parquet
+      hash: md5
+      md5: 2420890aa4815a0ca7c4d343bd4681e3
+      size: 1045386
+    - path: src/taxi/data/features.py
+      hash: md5
+      md5: 9cd68aef553cadfd5362c3c4176baba0
+      size: 2662
+    params:
+      params.yaml:
+        features:
+          lags:
+          - 1
+          - 2
+          - 3
+          - 24
+          - 168
+          rolling_window: 24
+          categorical:
+          - zone_id
+          numeric:
+          - hour
+          - day_of_week
+          - is_weekend
+          - is_holiday
+          - lag_1
+          - lag_2
+          - lag_3
+          - lag_24
+          - lag_168
+          - roll_mean_24
+          target: pickups
+    outs:
+    - path: data/processed/features.parquet
+      hash: md5
+      md5: 662a44de2005645f868db5fdfd98679d
+      size: 3745515

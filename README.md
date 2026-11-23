@@ -280,6 +280,7 @@ docs/                  incident report, rollback runbook
 |---|---|---|
 | Lynn-Aurea NIAT | data pipeline, DVC, drift check and policy | why WAPE, why PSI per feature, why quality checks before retraining |
 | Sereine TAWAMBA | MLflow tracking and Registry, API, tests, rollback | why aliases, why a 422 contract, how a rollback works |
-| [third member] | monitoring stack, incident simulation, CI | the four layers, the incident timeline |
+| Nicolas DOLLET | monitoring stack, incident simulation, CI | the four layers, the incident timeline |
+| Naye KANOUTE | monitoring stack, incident simulation, CI | the four layers, the incident timeline |
 
 Everyone must be able to run the whole demo and explain every part: the jury may ask anyone about anything.

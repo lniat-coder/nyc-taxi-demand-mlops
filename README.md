@@ -280,6 +280,24 @@ docs/                  incident report, rollback runbook
 |---|---|---|
 | Lynn-Aurea NIAT | data pipeline, DVC, drift check and policy | why WAPE, why PSI per feature, why quality checks before retraining |
 | Sereine TAWAMBA | MLflow tracking and Registry, API, tests, rollback | why aliases, why a 422 contract, how a rollback works |
-| [third member] | monitoring stack, incident simulation, CI | the four layers, the incident timeline |
+| Nicolas DOLLET | monitoring stack, incident simulation, CI | the four layers, the incident timeline |
+| Name KANOUTE | monitoring stack, incident simulation, CI | the four layers, the incident timeline |
+| Khaled ENLAGAR | monitoring stack, incident simulation, CI | the four layers, the incident timeline |
 
-Everyone must be able to run the whole demo and explain every part: the jury may ask anyone about anything.
+
+## Evidence: the system running on the real TLC data
+
+Screenshots of the run of 20 November 2026 (full logs in `reports/incident_run.log`).
+
+| What | Screenshot |
+|---|---|
+| MLflow Registry: v2 in production, v3 rolled back with its reason | ![](docs/screenshots/01-mlflow-registry-versions-aliases.png) |
+| A run's metrics and lineage (git commit, data md5, gate) | ![](docs/screenshots/02-mlflow-run-metrics-lineage.png) |
+| A run's parameters (windows, model, zones) | ![](docs/screenshots/03-mlflow-run-params.png) |
+| `POST /predict`: 200 with the model version | ![](docs/screenshots/04-api-predict-200.png) |
+| `POST /predict` with `lag_1 = -3`: 422 naming the field | ![](docs/screenshots/05-api-predict-422.png) |
+| April 2020 traffic: drift alerts firing in Prometheus | ![](docs/screenshots/06-prometheus-drift-alert-firing.png) |
+| Live PSI above 5 on every feature | ![](docs/screenshots/07-prometheus-psi-april.png) |
+| CI green on every push | ![](docs/screenshots/08-ci-green.png) |
+
+

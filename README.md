@@ -283,4 +283,3 @@ docs/                  incident report, rollback runbook
 | Nicolas DOLLET | monitoring stack, incident simulation, CI | the four layers, the incident timeline |
 | Naye KANOUTE | monitoring stack, incident simulation, CI | the four layers, the incident timeline |
 
-Everyone must be able to run the whole demo and explain every part: the jury may ask anyone about anything.

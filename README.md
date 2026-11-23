@@ -291,13 +291,13 @@ Screenshots of the run of 20 November 2026 (full logs in `reports/incident_run.l
 
 | What | Screenshot |
 |---|---|
-| MLflow Registry: v2 in production, v3 rolled back with its reason | ![](docs/screenshots/01-mlflow-registry-versions-aliases.png) |
-| A run's metrics and lineage (git commit, data md5, gate) | ![](docs/screenshots/02-mlflow-run-metrics-lineage.png) |
-| A run's parameters (windows, model, zones) | ![](docs/screenshots/03-mlflow-run-params.png) |
-| `POST /predict`: 200 with the model version | ![](docs/screenshots/04-api-predict-200.png) |
-| `POST /predict` with `lag_1 = -3`: 422 naming the field | ![](docs/screenshots/05-api-predict-422.png) |
-| April 2020 traffic: drift alerts firing in Prometheus | ![](docs/screenshots/06-prometheus-drift-alert-firing.png) |
-| Live PSI above 5 on every feature | ![](docs/screenshots/07-prometheus-psi-april.png) |
-| CI green on every push | ![](docs/screenshots/08-ci-green.png) |
+| MLflow Registry: v2 in production, v3 rolled back with its reason | ![](screenshots/01-mlflow-registry-versions-aliases.png) |
+| A run's metrics and lineage (git commit, data md5, gate) | ![](screenshots/02-mlflow-run-metrics-lineage.png) |
+| A run's parameters (windows, model, zones) | ![](screenshots/03-mlflow-run-params.png) |
+| `POST /predict`: 200 with the model version | ![](screenshots/04-api-predict-200.png) |
+| `POST /predict` with `lag_1 = -3`: 422 naming the field | ![](screenshots/05-api-predict-422.png) |
+| April 2020 traffic: drift alerts firing in Prometheus | ![](screenshots/06-prometheus-drift-alert-firing.png) |
+| Live PSI above 5 on every feature | ![](screenshots/07-prometheus-psi-april.png) |
+| CI green on every push | ![](screenshots/08-ci-green.png) |
 
 
